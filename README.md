@@ -1,11 +1,31 @@
-# dry-rest-permissions
+<p align="center">
+  <h3 align="center">Dry-Rest-Permissions</h3>
+  <p align="center">Rules based permissions for the Django Rest Framework.</p>
+  <p align="center">
+    <a href="https://travis-ci.org/FJNR-inc/dry-rest-permissions">
+      <img alt="Travis (.com)" src="https://img.shields.io/travis/com/FJNR-inc/dry-rest-permissions?style=flat-square">
+    </a>
+    <a href="https://pypi.org/project/dry-rest-permissions/">
+      <img alt="PyPI" src="https://img.shields.io/pypi/v/dry-rest-permissions?style=flat-square">
+    </a>
+  </p>
+</p>
 
 
-[<img src="https://api.travis-ci.org/dbkaplan/dry-rest-permissions.svg?branch=master">](http://travis-ci.org/dbkaplan/dry-rest-permissions?branch=master) [<img src="https://img.shields.io/pypi/v/dry-rest-permissions.svg">](https://pypi.python.org/pypi/dry-rest-permissions)
+---
+
+
+## News :loudspeaker:
+
+This fork it's officially supported by FJNR-inc since June 10th 2020. Multiple peoples tried to take contact with the old mainteners but the community had no news from him in the last two years and the package was completely out of date.
+
+In this context:
+
+ - Fell free to create issues in order to evaluate new needs
+ - Fell free to create PR in order to merge your individual enhancement you can have done on your own
+ - Fell free to contact us if you want to contribute on this package and maintain it, we think that it's always 
 
 ## Overview
-
-Rules based permissions for the Django Rest Framework.
 
 This framework is a perfect fit for apps that have many tables and relationships between them. It provides a framework that allows you to define, for each action or groups of actions, what users have permission for based on existing data in your database.
 
@@ -29,9 +49,9 @@ DRY Rest Permissions allows developers to easily describe what gives someone per
 
 ## Requirements
 
--  Python (2.7+)
--  Django (1.8, 1.10, 2.0)
--  Django REST Framework (3.5, 3.6, 3.7)
+-  Python (3.4+)
+-  Django (2.2, 3.0)
+-  Django REST Framework (3.8, 3.9, 3.10, 3.11)
 
 ## Installation
 

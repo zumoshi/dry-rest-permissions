@@ -9,10 +9,16 @@ from setuptools import setup
 name = 'dry-rest-permissions'
 package = 'dry_rest_permissions'
 description = 'Rules based permissions for the Django Rest Framework'
-url = 'https://github.com/Helioscene/dry-rest-permissions'
-author = 'Heliosene, David B. Kaplan'
-author_email = 'info@helioscene.com'
+url = 'https://github.com/FJNR-inc/dry-rest-permissions'
+author = 'FJNR-inc'
+author_email = 'noel.rignon@fjnr.ca'
 license = 'BSD'
+
+with open('README.md') as readme_file:
+    readme = readme_file.read()
+
+with open('HISTORY.md') as history_file:
+    history = history_file.read()
 
 
 def get_version(package):
@@ -70,6 +76,8 @@ setup(
     url=url,
     license=license,
     description=description,
+    long_description=readme + '\n\n' + history,
+    long_description_content_type='text/markdown',
     author=author,
     author_email=author_email,
     packages=get_packages(package),
@@ -83,10 +91,11 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Internet :: WWW/HTTP',
     ]
 )
