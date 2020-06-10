@@ -6,7 +6,7 @@ import sys
 from setuptools import setup
 
 
-name = 'dry-rest-permissions'
+name = 'django-dry-rest-permissions'
 package = 'dry_rest_permissions'
 description = 'Rules based permissions for the Django Rest Framework'
 url = 'https://github.com/FJNR-inc/dry-rest-permissions'

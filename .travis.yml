@@ -59,3 +59,4 @@ deploy:
   on:
     repo: FJNR-inc/dry-rest-permissions
     tags: true
+    condition: $TOX_ENV = py34-django2.2-drf3.8
