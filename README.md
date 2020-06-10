@@ -5,8 +5,8 @@
     <a href="https://travis-ci.org/FJNR-inc/dry-rest-permissions">
       <img alt="Travis (.com)" src="https://img.shields.io/travis/com/FJNR-inc/dry-rest-permissions?style=flat-square">
     </a>
-    <a href="https://pypi.org/project/dry-rest-permissions/">
-      <img alt="PyPI" src="https://img.shields.io/pypi/v/dry-rest-permissions?style=flat-square">
+    <a href="https://pypi.org/project/django-dry-rest-permissions/">
+      <img alt="PyPI" src="https://img.shields.io/pypi/v/django-dry-rest-permissions?style=flat-square">
     </a>
   </p>
 </p>
