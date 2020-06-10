@@ -1,6 +1,6 @@
 # History
 
-## 0.2.0 (2020-06-10)
+## 0.2.1 (2020-06-10)
 
 * First release on PyPI.
 * Forked from https://github.com/dbkaplan/dry-rest-permissions on the same day
