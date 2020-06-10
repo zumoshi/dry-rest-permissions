@@ -1,4 +1,4 @@
-site_name: dry-rest-permissions
+site_name: django-dry-rest-permissions
 site_description: Rules based permissions for the Django Rest Framework
-repo_url: https://github.com/helioscene/dry-rest-permissions
+repo_url: https://github.com/FJNR-inc/dry-rest-permissions
 site_dir: html
