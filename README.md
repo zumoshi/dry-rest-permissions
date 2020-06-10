@@ -1,5 +1,5 @@
 <p align="center">
-  <h3 align="center">Dry-Rest-Permissions</h3>
+  <h3 align="center">Django-Dry-Rest-Permissions</h3>
   <p align="center">Rules based permissions for the Django Rest Framework.</p>
   <p align="center">
     <a href="https://travis-ci.org/FJNR-inc/dry-rest-permissions">
@@ -57,7 +57,7 @@ DRY Rest Permissions allows developers to easily describe what gives someone per
 
 Install using ``pip``…
 
-    $ pip install dry-rest-permissions
+    $ pip install django-dry-rest-permissions
 
 ## Setup
 

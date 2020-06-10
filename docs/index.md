@@ -9,7 +9,7 @@
 
 ---
 
-#dry-rest-permissions
+#django-dry-rest-permissions
 
 ##Overview
 
@@ -45,7 +45,7 @@ DRY Rest Permissions allows developers to easily describe what gives someone per
 
 Install using ``pip``…
 
-    $ pip install dry-rest-permissions
+    $ pip install django-dry-rest-permissions
 
 ##Setup
 
