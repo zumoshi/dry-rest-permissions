@@ -17,13 +17,17 @@
 
 ## News :loudspeaker:
 
-This fork it's officially supported by FJNR-inc since June 10th 2020. Multiple peoples tried to take contact with the old mainteners but the community had no news from him in the last two years and the package was completely out of date.
+This project is a fork from [@dbkaplan/dry-rest-permissions](https://github.com/dbkaplan/dry-rest-permissions), 
+multiple peoples tried to contact the old maintener but the community had no news from him in the last two years 
+and the package was completely out of date.
+
+This fork it's officially supported by FJNR-inc since June 10th 2020.
 
 In this context:
 
  - Fell free to create issues in order to evaluate new needs
  - Fell free to create PR in order to merge your individual enhancement you can have done on your own
- - Fell free to contact us if you want to contribute on this package and maintain it, we think that it's always 
+ - Fell free to contact us if you want to contribute on this package and maintain it
 
 ## Overview
 
