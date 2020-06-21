@@ -12,6 +12,8 @@ from rest_framework import filters
 from rest_framework import permissions
 from rest_framework import fields
 
+from django.contrib.contenttypes.models import ContentType
+
 
 class DRYPermissionFiltersBase(filters.BaseFilterBackend):
     """
@@ -264,6 +266,91 @@ class DRYPermissionsField(fields.Field):
             if not self.global_only and results.get(action, True) and method_names.get('object', None) is not None:
                 results[action] = getattr(value, method_names['object'])(self.context['request'])
         return results
+
+
+class DRYGlobalPermissionsField(fields.Field):
+    """
+    This is a field that can be used on a DRF model serializer class. Often
+    a user interface needs to know what permissions a user has so that it
+    can change the interface accordingly. This field will call the same
+    developer defined models methods (hence the DRY) that DRYPermissions
+    uses and create a dictionary of all global permissions defined and whether
+    the requester currently has access or not.
+
+    This will only return permissions that are defined by methods. For
+    example it will not return
+    retrieve: True if the read permission is defined.
+
+    This will only show global permissions, so the result can change on
+    specific object.
+
+    other parameters:
+    actions: Add a list of strings here to specifically identify the
+        actions this looks up. If left as None then it will return the
+        default CRUD actions along with list and read and write.
+    additional_actions: Add a list of strings here to add on to the default
+        actions, without having to repeat them.
+    """
+    default_actions = [
+        'create',
+        'retrieve',
+        'update',
+        'destroy',
+        'write',
+        'read'
+    ]
+    models = []
+
+    def __init__(self, actions=None, additional_actions=None, **kwargs):
+        """See class description for parameters and usage"""
+        self.action_method_map = {}
+
+        self.actions = self.default_actions if (actions is None) else actions
+        if additional_actions is not None:
+            self.actions = self.actions + additional_actions
+
+        kwargs['source'] = '*'
+        kwargs['read_only'] = True
+        super(DRYGlobalPermissionsField, self).__init__(**kwargs)
+
+    def bind(self, field_name, parent):
+        """
+        Check all the models using Dry-Rest-Permissions to see what methods
+        are defined and save them.
+        """
+
+        for content_type in ContentType.objects.all():
+            for action in self.actions:
+                global_method_name = "has_{action}_permission".format(
+                    action=action
+                )
+                if hasattr(content_type.model_class(), global_method_name):
+                    self.action_method_map.setdefault(
+                        content_type,
+                        dict()
+                    )[action] = {
+                        'global': global_method_name
+                    }
+        super(DRYGlobalPermissionsField, self).bind(field_name, parent)
+
+    def to_representation(self, value):
+        """
+        Calls the developer defined permission methods
+        (both global and object) and formats the results into a dictionary.
+        """
+        final_result = {}
+
+        for content_type, action_method_mapped in self.action_method_map.items():
+            results = {}
+            for action, method_names in action_method_mapped.items():
+                if method_names.get('global', None) is not None:
+                    results[action] = getattr(
+                        content_type.model_class(),
+                        method_names['global']
+                    )(self.context['request'])
+
+            final_result[content_type.model] = results
+        return final_result
 
 
 def allow_staff_or_superuser(func):
