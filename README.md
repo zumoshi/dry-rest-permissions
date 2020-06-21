@@ -220,7 +220,13 @@ class Project(models.Model):
         return request.user == self.owner
 ```
 ## Returning Permissions to the Client App
-You often need to know all of the possible permissions that are available to the current user from within your client app so that you can show certain create, edit and destroy options. Sometimes you need to know the permissions on the client app so that you can display messages to them. ``DRYPermissionsField`` allows you to return these permissions in a serializer without having to redefine your permission logic. DRY!
+You often need to know all of the possible permissions that are available to the current user from within your client 
+app so that you can show certain create, edit and destroy options. Sometimes you need to know the permissions on the 
+client app so that you can display messages to them. ``DRYPermissionsField`` & ``DRYGlobalPermissionsField`` allows 
+you to return these permissions in a serializer without having to redefine your permission logic. DRY!
+
+### DryPermissionsField
+
 ```python
 from dry_rest_permissions.generics import DRYPermissionsField
 
@@ -245,6 +251,7 @@ This response object will look like this:
     }
 }
 ```
+
 #### Definition
 ``DRYPermissionsField(actions=None, additional_actions=None, global_only=False, object_only=False, **kwargs):``
 
@@ -262,6 +269,52 @@ A serializer with this field MUST have the request accessible via the serializer
 ```python
 serializer = TestSerializer(data=request.data, context={'request': request})
 ```
+
+#### DryGlobalPermissionsField
+
+```python
+from dry_rest_permissions.generics import DRYGlobalPermissionsField
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    permissions = DRYGlobalPermissionsField()
+    
+    class Meta:
+        model = Project
+        fields = ('id', 'owner', 'permissions')
+```  
+This response object will look like this:
+```json
+{
+    "id": 1,
+    "owner": 100,
+    "permissions": {
+        "Project": {
+            "read": true,
+            "write": false
+        },
+        "MyOtherModel": {
+            "create": true,
+            "destroy": false
+        }
+    }
+}
+```
+
+#### Definition
+``DRYGlobalPermissionsField(actions=None, additional_actions=None, **kwargs):``
+
+``actions`` - This can be passed a list in order to limit the actions that are looked up.
+
+``additional_actions`` - If you add custom actions then you can have DRYPermissionsField look them up by adding an array of the actions as so ``permissions = DRYPermissionsField(additional_actions=['publish'])``.
+
+This field only returns what is defined on the model. By default it retrieves all default action types that are defined.
+
+A serializer with this field MUST have the request accessible via the serializer's context. By default DRF passes the request to all serializers that is creates. However, if you create a serializer yourself you will have to add the request manually like this:
+```python
+serializer = TestSerializer(data=request.data, context={'request': request})
+```
+
 
 ## Filtering lists by action type
 Many times it is not enough to say that a user does not have permission to view a list of items. Instead you want a user to only be able to view a partial list of items. In this case DRY Rest Permissions built on the filter concept using ``DRYPermissionFiltersBase`` to apply permissions to specific actions.

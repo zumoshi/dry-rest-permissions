@@ -4,7 +4,14 @@ from django.test.client import RequestFactory
 from rest_framework.request import Request
 from rest_framework import serializers
 from rest_framework import viewsets
-from dry_rest_permissions.generics import DRYPermissions, DRYObjectPermissions, DRYGlobalPermissions, DRYPermissionsField, DRYPermissionFiltersBase
+from dry_rest_permissions.generics import (
+    DRYPermissions,
+    DRYObjectPermissions,
+    DRYGlobalPermissions,
+    DRYPermissionsField,
+    DRYPermissionFiltersBase,
+    DRYGlobalPermissionsField
+)
 
 
 class DummyModel(models.Model):
@@ -100,6 +107,23 @@ class DummySerializer(serializers.ModelSerializer):
         fields = ('test_field', 'permissions')
 
 
+class BaseMixedModel(models.Model, BaseGlobalMixin, SpecificGlobalMixin,
+                     BaseObjectMixin, SpecificObjectMixin):
+    """
+    We need to define this model before testing in order to let the
+    ContentType of Django take in consideration this model and all the Mixins
+    """
+    test_field = models.TextField()
+
+
+class DummyProfileSerializer(serializers.ModelSerializer):
+    global_permissions = DRYGlobalPermissionsField()
+
+    class Meta:
+        model = BaseMixedModel
+        fields = ('test_field', 'global_permissions')
+
+
 class DummyViewSet(viewsets.ModelViewSet):
     permission_classes = (DRYPermissions,)
     queryset = DummyModel.objects.all()
@@ -115,6 +139,11 @@ class DummyViewSet(viewsets.ModelViewSet):
                 return False
 
         return True
+
+
+class DummyProfileViewSet(viewsets.ModelViewSet):
+    queryset = BaseMixedModel.objects.all()
+    serializer_class = DummyProfileSerializer
 
 
 class DRYRestPermissionsTests(TestCase):
@@ -152,6 +181,57 @@ class DRYRestPermissionsTests(TestCase):
         for action in ['read', 'write']:
             has_permission = representation['permissions'].get(action, None)
             self.assertEqual(has_permission, assert_base, "Action '%s' %s != %s" % (action, has_permission, assert_base))
+
+    def _run_dry_generic_permission_field_checks(self, view, obj, additional_actions=[]):
+        serializer = view.get_serializer_class()()
+        # dummy request
+        serializer.context['request'] = self.request_retrieve
+        representation = serializer.to_representation(obj)
+
+        permissions = {
+            'basemixedmodel': {
+                'create': True,
+                'retrieve': True,
+                'update': True,
+                'destroy': True,
+                'write': True,
+                'read': True
+            }
+        }
+
+        for additional_action in additional_actions:
+            permissions['basemixedmodel'][additional_action] = True
+
+        self.assertEqual(
+            representation['global_permissions'],
+            permissions
+        )
+
+    def test_true_base_generic_permissions(self):
+        view = DummyProfileViewSet()
+
+        self._run_dry_generic_permission_field_checks(view, BaseMixedModel())
+
+    def test_base_generic_additionals_permissions(self):
+        class TestSerializer(DummySerializer):
+            global_permissions = DRYGlobalPermissionsField(
+                additional_actions=['custom_action1', 'custom_action2']
+            )
+
+            class Meta:
+                model = BaseMixedModel
+                fields = '__all__'
+
+        class TestViewSet(DummyViewSet):
+            serializer_class = TestSerializer
+
+        view = TestViewSet()
+
+        self._run_dry_generic_permission_field_checks(
+            view,
+            BaseMixedModel(),
+            additional_actions=['custom_action1', 'custom_action2']
+        )
 
     def test_true_base_permissions(self):
         class TestModel(DummyModel, BaseObjectMixin, BaseGlobalMixin):
