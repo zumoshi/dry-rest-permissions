@@ -1,5 +1,9 @@
 # History
 
+## 1.1.0
+
+* Add DRYGlobalPermissionsField
+
 ## 1.0.0 (2020-06-10)
 
 * First release on PyPI.
