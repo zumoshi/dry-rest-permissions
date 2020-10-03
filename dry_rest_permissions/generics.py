@@ -13,6 +13,7 @@ from rest_framework import permissions
 from rest_framework import fields
 
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
 
 
 class DRYPermissionFiltersBase(filters.BaseFilterBackend):
@@ -72,6 +73,8 @@ class DRYPermissions(permissions.BasePermission):
     2) Object permissions for a specific object (format has_object_{action}_permission):
         2a) specific action permissions (e.g. has_object_retrieve_permission)
         2b) general action permissions  (e.g. has_object_read_permission)
+    3) Django permissions (using user.has_perm method)
+        https://docs.djangoproject.com/en/3.1/topics/auth/default/#default-permissions
 
     If either of the specific permissions do not exist, the DRYPermissions will
     simply check the general permission.
@@ -95,6 +98,7 @@ class DRYPermissions(permissions.BasePermission):
     global_permissions = True
     object_permissions = True
     partial_update_is_update = True
+    django_permissions = False
 
     def has_permission(self, request, view):
         """
@@ -120,14 +124,35 @@ class DRYPermissions(permissions.BasePermission):
             if hasattr(model_class, action_method_name):
                 return getattr(model_class, action_method_name)(request)
 
-        if request.method in permissions.SAFE_METHODS:
-            assert hasattr(model_class, 'has_read_permission'), \
-                self._get_error_message(model_class, 'has_read_permission', action_method_name)
-            return model_class.has_read_permission(request)
-        else:
-            assert hasattr(model_class, 'has_write_permission'), \
-                self._get_error_message(model_class, 'has_write_permission', action_method_name)
-            return model_class.has_write_permission(request)
+        try:
+            if request.method in permissions.SAFE_METHODS:
+                assert hasattr(model_class, 'has_read_permission'), \
+                    self._get_error_message(model_class, 'has_read_permission', action_method_name)
+                return model_class.has_read_permission(request)
+            else:
+                assert hasattr(model_class, 'has_write_permission'), \
+                    self._get_error_message(model_class, 'has_write_permission', action_method_name)
+                return model_class.has_write_permission(request)
+        except AssertionError as e:
+            if self.django_permissions:
+                django_permission, django_permission_exists = None, False
+                if hasattr(view, 'action'):
+                    action = self._get_action(view.action)
+                    django_actions_map = {'list': 'view', 'retrieve': 'view', 'update': 'change',
+                                          'destroy': 'delete', 'create': 'add'}
+                    django_action = django_actions_map[action] if action in django_actions_map else action
+                    django_permission, django_permission_exists = self._get_permission(model_class, django_action)
+                django_generic_action = f'view' if request.method in permissions.SAFE_METHODS else f'change'
+                django_generic_permission, dgp_exists = self._get_permission(model_class, django_generic_action)
+
+                if django_permission_exists:
+                    return request.user.has_perm(django_permission)
+                if dgp_exists:
+                    return request.user.has_perm(django_generic_permission)
+                raise AssertionError(
+                    self._get_error_message(model_class, django_generic_permission, django_permission)) from e
+            else:
+                raise e from None
 
     def has_object_permission(self, request, view, obj):
         """
@@ -164,6 +189,17 @@ class DRYPermissions(permissions.BasePermission):
             return_action = 'update'
         return return_action
 
+    def _get_permission(self, model_class, action):
+        """
+        Utility function that creates the permission name and checks if it exists.
+        """
+        app_name = model_class._meta.app_label
+        model_name = model_class._meta.model_name
+
+        codename = f"{action}_{model_name}"
+        exists = Permission.objects.filter(codename=codename, content_type__app_label=app_name).exists()
+        return f'{app_name}.{codename}', exists
+
     def _get_error_message(self, model_class, method_name, action_method_name):
         """
         Get assertion error message depending if there are actions permissions methods defined.
@@ -186,6 +222,13 @@ class DRYObjectPermissions(DRYPermissions):
     This is a shortcut class that can be used to only check object permissions on a model.
     """
     global_permissions = False
+
+
+class DRYOrDjangoPermissions(DRYPermissions):
+    """
+    This is a shortcut class that can be used to check django permissions if permission methods aren't defined.
+    """
+    django_permissions = True
 
 
 class DRYPermissionsField(fields.Field):
